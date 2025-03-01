@@ -1,20 +1,39 @@
+export enum FormKey {
+  FirstName = 'firstName',
+  LastName = 'lastName',
+  DateOfBirth = 'dateOfBirth',
+  Email = 'email',
+  Phone = 'phone',
+  LoanAmount = 'loanAmount',
+  UpfrontPayment = 'upfrontPayment',
+  Terms = 'terms',
+  MonthlySalary = 'monthlySalary',
+  AdditionalIncome = 'additionalIncome',
+  Mortgage = 'mortgage',
+  OtherCredits = 'otherCredits',
+  ShowAdditionalInformation = 'showAdditionalInformation',
+  ShowMortgage = 'showMortgage',
+  ShowOtherCredits = 'showOtherCredits',
+  Confirm = 'confirm',
+}
+
 export type UserData = {
-  firstName: string;
-  lastName: string;
-  dateOfBirth: Date;
-  email: string;
-  phone: string;
-  loanAmount: number;
-  upfrontPayment: number;
-  terms: number;
-  monthlySalary: number;
-  additionalIncome: number;
-  mortgage: number;
-  otherCredits: number;
-  showAdditionalInformation: boolean;
-  showMortgage: boolean;
-  showOtherCredits: boolean;
-  confirm: boolean;
+  [FormKey.FirstName]: string;
+  [FormKey.LastName]: string;
+  [FormKey.DateOfBirth]: Date;
+  [FormKey.Email]: string;
+  [FormKey.Phone]: string;
+  [FormKey.LoanAmount]: number;
+  [FormKey.UpfrontPayment]: number;
+  [FormKey.Terms]: number;
+  [FormKey.MonthlySalary]: number;
+  [FormKey.AdditionalIncome]: number;
+  [FormKey.Mortgage]: number;
+  [FormKey.OtherCredits]: number;
+  [FormKey.ShowAdditionalInformation]: boolean;
+  [FormKey.ShowMortgage]: boolean;
+  [FormKey.ShowOtherCredits]: boolean;
+  [FormKey.Confirm]: boolean;
 };
 
 export enum StepId {
@@ -43,3 +62,15 @@ export type FormStep<T = UserData> = {
   content: Array<FormInput<T>>;
   id: StepId;
 };
+
+export type FormState = {
+  formId: null | string;
+  status: Status;
+  activeStepId: StepId;
+  index: number;
+};
+
+export type FormStepByCategory = Record<
+  StepId,
+  { keys: FormKey[]; index: number; next: StepId | null }
+>;

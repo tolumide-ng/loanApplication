@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CONSTANTS } from '@/utils/constants';
+import { FormKey } from '../types';
 
 function numericString(label: string) {
   return z
@@ -10,16 +11,15 @@ function numericString(label: string) {
 
 export type ValidationSchema = z.infer<typeof validationSchema>;
 export type ValidationReturn = (schema: typeof validationSchema) => void;
-export type ValidationKey = keyof typeof validationSchema.shape;
 
 export const validationSchema = z.object({
-  firstName: z
+  [FormKey.FirstName]: z
     .string()
     .min(1, 'First name is required')
     .regex(CONSTANTS.nameRegex, 'Only Latin and German letters are allowed')
     .refine((name) => !name.includes(' '), 'Only a single name is allowed'),
 
-  lastName: z
+  [FormKey.LastName]: z
     .string()
     .min(1, 'Last name is required')
     .regex(
@@ -27,7 +27,7 @@ export const validationSchema = z.object({
       'Only Latin and German letters are allowed',
     ),
 
-  dateOfBirth: z
+  [FormKey.DateOfBirth]: z
     .string()
     .refine((date) => !isNaN(Date.parse(date)), 'Invalid date format')
     .transform((date) => new Date(date))
@@ -39,55 +39,60 @@ export const validationSchema = z.object({
       const age = new Date().getFullYear() - new Date(date).getFullYear();
       return age >= CONSTANTS.minAge;
     }, 'User must be at least 18 years old'),
-  email: z.string().email('Invalid email format'),
 
-  phone: z
+  [FormKey.Email]: z.string().email('Invalid email format'),
+
+  [FormKey.Phone]: z
     .string()
     .regex(
       /^\+[1-9]\d{1,14}$/,
       'Invalid phone format: phone must match +49... format',
     ),
 
-  loanAmount: numericString('Load Amount').pipe(
+  [FormKey.LoanAmount]: numericString('Load Amount').pipe(
     z
       .number()
       .min(CONSTANTS.minLoanAmount, 'Loan amount is too low')
       .max(CONSTANTS.maxLoanAmount, 'Loan amount is too high'),
   ),
-  upfrontPayment: numericString('Upfront Payment'),
 
-  terms: numericString('Term').pipe(
+  [FormKey.UpfrontPayment]: numericString('Upfront Payment'),
+
+  [FormKey.Terms]: numericString('Term').pipe(
     z
       .number()
       .min(CONSTANTS.minTerm, 'term is too low')
       .max(CONSTANTS.maxTerm, 'term is too high'),
   ),
 
-  monthlySalary: numericString('Monthly salary')
+  [FormKey.MonthlySalary]: numericString('Monthly salary')
     .pipe(z.number().min(1, 'Salary must be greater than 0'))
     .default('0'),
 
-  additionalIncome: numericString('Additional Income').optional().default(0),
+  [FormKey.AdditionalIncome]: numericString('Additional Income')
+    .optional()
+    .default(0),
 
-  mortgage: numericString('Mortgage').optional().default('0'),
+  [FormKey.Mortgage]: numericString('Mortgage').optional().default('0'),
 
-  otherCredits: numericString('credit').optional().default('0'),
-  showAdditionalInformation: z.boolean(),
-  showMortgage: z.boolean(),
-  showOtherCredits: z.boolean(),
+  [FormKey.OtherCredits]: numericString('credit').optional().default('0'),
 
-  confirm: z
+  [FormKey.ShowAdditionalInformation]: z.boolean(),
+  [FormKey.ShowMortgage]: z.boolean(),
+  [FormKey.ShowOtherCredits]: z.boolean(),
+
+  [FormKey.Confirm]: z
     .boolean()
     .refine((value) => value === true, 'You must confirm to proceed'),
 });
 
-export const refinements: Partial<Record<ValidationKey, ValidationReturn>> = {
-  upfrontPayment: (schema: typeof validationSchema) =>
+export const refinements: Partial<Record<FormKey, ValidationReturn>> = {
+  [FormKey.UpfrontPayment]: (schema: typeof validationSchema) =>
     schema.refine((data) => data.upfrontPayment < data.loanAmount, {
       message: 'Upfront payment must be lower than loan amount',
       path: ['upfrontPayment'],
     }),
-  terms: (schema: typeof validationSchema) =>
+  [FormKey.Terms]: (schema: typeof validationSchema) =>
     schema.refine(
       (data) => {
         const dob = new Date(data.dateOfBirth ?? new Date());
@@ -96,7 +101,7 @@ export const refinements: Partial<Record<ValidationKey, ValidationReturn>> = {
       },
       { message: 'Loan term + age must be under 80 years', path: ['terms'] },
     ),
-  confirm: (schema: typeof validationSchema) =>
+  [FormKey.Confirm]: (schema: typeof validationSchema) =>
     schema.refine((data) => {
       const additionalIncome = data.showAdditionalInformation
         ? data.additionalIncome

@@ -1,14 +1,9 @@
-import { UserData } from '@/utils/types';
-import {
-  refinements,
-  ValidationKey,
-  ValidationSchema,
-  validationSchema,
-} from './schema';
+import { FormKey, UserData } from '@/utils/types';
+import { refinements, ValidationSchema, validationSchema } from './schema';
 
 export function validateSelectedFields(
   data: UserData,
-  fieldsToValidate: ValidationKey[],
+  fieldsToValidate: FormKey[],
 ) {
   const selectedSchema = validationSchema.pick(
     Object.fromEntries(
@@ -24,7 +19,7 @@ export function validateSelectedFields(
   return refinedSchema.safeParse(data);
 }
 
-export function fieldsToValidate(fieldsToValidate: ValidationKey[]) {
+export function fieldsToValidate(fieldsToValidate: FormKey[]) {
   const selectedSchema = validationSchema.pick(
     Object.fromEntries(
       fieldsToValidate.map((field) => [field, true]),

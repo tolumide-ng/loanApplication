@@ -15,6 +15,7 @@
     "@chakra-ui/react": "^2.10.4",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@hookform/resolvers": "^4.1.2",
     "axios": "^1.8.1",
     "fastify": "^5.2.1",
     "framer-motion": "^12.4.7",

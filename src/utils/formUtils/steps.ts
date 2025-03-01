@@ -1,4 +1,4 @@
-import { FormStep, StepId } from '@/utils/types';
+import { FormKey, FormStep, FormStepByCategory, StepId } from '@/utils/types';
 
 export const steps: FormStep[] = [
   {
@@ -6,17 +6,17 @@ export const steps: FormStep[] = [
     id: StepId.PersonalInformation,
     content: [
       {
-        name: 'firstName',
+        name: FormKey.FirstName,
         label: 'First Name',
         type: 'text',
       },
       {
-        name: 'lastName',
+        name: FormKey.LastName,
         label: 'Last Name',
         type: 'text',
       },
       {
-        name: 'dateOfBirth',
+        name: FormKey.DateOfBirth,
         label: 'Date of Birth',
         type: 'date',
       },
@@ -26,9 +26,9 @@ export const steps: FormStep[] = [
     title: 'Contact Details',
     id: StepId.ContactDetails,
     content: [
-      { name: 'email', label: 'Email', type: 'email' },
+      { name: FormKey.Email, label: 'Email', type: 'email' },
       {
-        name: 'phone',
+        name: FormKey.Phone,
         label: 'Phone Number',
         type: 'text',
       },
@@ -39,17 +39,17 @@ export const steps: FormStep[] = [
     id: StepId.LoanRequest,
     content: [
       {
-        name: 'loanAmount',
+        name: FormKey.LoanAmount,
         label: 'Loan Amount',
         type: 'number',
       },
       {
-        name: 'upfrontPayment',
+        name: FormKey.UpfrontPayment,
         label: 'Upfront Payment',
         type: 'number',
       },
       {
-        name: 'terms',
+        name: FormKey.Terms,
         label: 'Terms',
         type: 'number',
       },
@@ -59,10 +59,14 @@ export const steps: FormStep[] = [
     title: 'Financial Information',
     id: StepId.FinancialInformation,
     content: [
-      { name: 'monthlySalary', label: 'Monthly Salary', type: 'number' },
-      { name: 'additionalIncome', label: 'Additional Income', type: 'number' },
-      { name: 'mortgage', label: 'Mortgage', type: 'number' },
-      { name: 'otherCredits', label: 'Other Credits', type: 'number' },
+      { name: FormKey.MonthlySalary, label: 'Monthly Salary', type: 'number' },
+      {
+        name: FormKey.AdditionalIncome,
+        label: 'Additional Income',
+        type: 'number',
+      },
+      { name: FormKey.Mortgage, label: 'Mortgage', type: 'number' },
+      { name: FormKey.OtherCredits, label: 'Other Credits', type: 'number' },
     ],
   },
   {
@@ -70,10 +74,43 @@ export const steps: FormStep[] = [
     id: StepId.Confirm,
     content: [
       {
-        name: 'confirm',
+        name: FormKey.Confirm,
         label: 'I Confirm',
         type: 'checkbox',
       },
     ],
   },
 ] as const;
+
+export const formStepsByCategory: FormStepByCategory = {
+  [StepId.PersonalInformation]: {
+    keys: [FormKey.FirstName, FormKey.LastName, FormKey.DateOfBirth],
+    index: 0,
+    next: StepId.ContactDetails,
+  },
+  [StepId.ContactDetails]: {
+    keys: [FormKey.Email, FormKey.Phone],
+    index: 1,
+    next: StepId.LoanRequest,
+  },
+  [StepId.LoanRequest]: {
+    keys: [FormKey.LoanAmount, FormKey.UpfrontPayment, FormKey.Terms],
+    index: 2,
+    next: StepId.FinancialInformation,
+  },
+  [StepId.FinancialInformation]: {
+    keys: [
+      FormKey.MonthlySalary,
+      FormKey.AdditionalIncome,
+      FormKey.Mortgage,
+      FormKey.OtherCredits,
+    ],
+    index: 3,
+    next: StepId.Confirm,
+  },
+  [StepId.Confirm]: {
+    keys: [FormKey.Confirm],
+    index: 4,
+    next: null,
+  },
+};
