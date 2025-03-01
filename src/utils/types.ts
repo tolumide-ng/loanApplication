@@ -37,3 +37,9 @@ export type FormInput<T, K extends keyof T = keyof T> = {
   label: string;
   type: 'text' | 'date' | 'number' | 'email' | 'checkbox';
 };
+
+export type FormStep<T = UserData> = {
+  title: string;
+  content: Array<FormInput<T>>;
+  id: StepId;
+};
