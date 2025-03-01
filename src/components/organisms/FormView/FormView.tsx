@@ -1,6 +1,13 @@
 import { FormField } from '@/components/atoms/FormField/FormField';
-import { FormKey, FormState, FormStep, StepId, UserData } from '@/utils/types';
-import { Box, Button, Flex, Stack } from '@chakra-ui/react';
+import {
+  FormKey,
+  FormState,
+  FormStep,
+  Status,
+  StepId,
+  UserData,
+} from '@/utils/types';
+import { Box, Button, Flex, Stack, Text } from '@chakra-ui/react';
 import { UseFormReturn } from 'react-hook-form';
 
 export type Props = {
@@ -21,6 +28,8 @@ export function FormView({
   methods,
 }: Readonly<Props>) {
   const keys = content.map((data) => data.name);
+  const submittingForm = formState.status === Status.Loading;
+
   return (
     <Stack
       as="form"
@@ -44,8 +53,14 @@ export function FormView({
         </Box>
       ))}
 
+      {formState.activeStepId === StepId.FinancialInformation ? (
+        <Text fontSize={'sm'} color={'red'}>
+          {formState.formErrors.financialInformation}
+        </Text>
+      ) : null}
+
       <Flex mt={'4'} justifyContent={'space-between'}>
-        {formState.index !== 0 && (
+        {formState.activeStepId !== StepId.PersonalInformation && (
           <Button
             type="button"
             w={'36'}
@@ -56,8 +71,8 @@ export function FormView({
           </Button>
         )}
 
-        <Button type="submit" w={'36'} ml={'auto'}>
-          {submitText}
+        <Button type="submit" w={'36'} ml={'auto'} disabled={submittingForm}>
+          {submittingForm ? 'Submitting' : submitText}
         </Button>
       </Flex>
     </Stack>

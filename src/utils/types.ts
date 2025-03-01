@@ -68,6 +68,7 @@ export type FormState = {
   status: Status;
   activeStepId: StepId;
   index: number;
+  formErrors: Partial<Record<StepId, string | null>>;
 };
 
 export type FormStepByCategory = Record<

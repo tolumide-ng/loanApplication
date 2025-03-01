@@ -25,6 +25,9 @@ export function useHome() {
     formId: null,
     activeStepId: StepId.PersonalInformation,
     index: 0,
+    formErrors: {
+      [StepId.FinancialInformation]: null,
+    },
   };
 
   const [formState, setFormState] = useState<FormState>(defaultFormState);
@@ -93,8 +96,10 @@ export function useHome() {
 
   async function onSubmit(fieldsToValidate: Array<FormKey>) {
     const formData = methods.getValues();
-
     const result = validateSelectedFields(formData, fieldsToValidate);
+    if (formState.activeStepId === StepId.FinancialInformation) {
+      if (!isValidLoanApplication()) return;
+    }
 
     if (result.success) {
       setFormState((prev) => ({
@@ -135,8 +140,7 @@ export function useHome() {
             activeStepId: nextStep,
           }));
         } else {
-          setFormState(defaultFormState);
-          LocalStorage.remove(CONSTANTS.formKey);
+          onRestart();
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -144,6 +148,39 @@ export function useHome() {
         setFormState((prev) => ({ ...prev, status: Status.Error }));
       }
     }
+  }
+
+  function isValidLoanApplication() {
+    const data = methods.getValues();
+    const additionalIncome = data.showAdditionalInformation
+      ? data.additionalIncome
+      : 0;
+    const otherCredits = data.showOtherCredits ? data.otherCredits : 0;
+    const mortgage = data.showMortgage ? data.mortgage : 0;
+
+    const availableFunds =
+      (data.monthlySalary + additionalIncome - mortgage - otherCredits) *
+      data.terms *
+      0.5;
+
+    const validLoanApplication = availableFunds > data.loanAmount;
+
+    if (validLoanApplication) {
+      setFormState((prev) => ({
+        ...prev,
+        formErrors: { [StepId.FinancialInformation]: null },
+      }));
+    } else {
+      setFormState((prev) => ({
+        ...prev,
+        formErrors: {
+          [StepId.FinancialInformation]:
+            'Insufficient funds: Please reduce loan amount or restart with new applicant',
+        },
+      }));
+    }
+
+    return validLoanApplication;
   }
 
   function onRestart() {

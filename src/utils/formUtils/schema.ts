@@ -101,18 +101,4 @@ export const refinements: Partial<Record<FormKey, ValidationReturn>> = {
       },
       { message: 'Loan term + age must be under 80 years', path: ['terms'] },
     ),
-  [FormKey.Confirm]: (schema: typeof validationSchema) =>
-    schema.refine((data) => {
-      const additionalIncome = data.showAdditionalInformation
-        ? data.additionalIncome
-        : 0;
-      const otherCredits = data.showOtherCredits ? data.otherCredits : 0;
-      const mortgage = data.showMortgage ? data.mortgage : 0;
-
-      const availableFunds =
-        (data.monthlySalary + additionalIncome - mortgage - otherCredits) *
-        data.terms *
-        0.5;
-      return availableFunds > data.loanAmount;
-    }, 'Insufficient funds; reduce loan amount or restart with new applicant'),
 };
