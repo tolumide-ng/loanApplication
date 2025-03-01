@@ -99,7 +99,7 @@ fastify.patch('/entities/:uuid', async (request, reply) => {
 // Start the server
 const start = async () => {
   try {
-    await fastify.listen({ port: 3000 });
+    await fastify.listen({ host: '0.0.0.0', port: 3000 });
     fastify.log.info('Server is running at http://localhost:3000');
   } catch (error) {
     fastify.log.error(error);

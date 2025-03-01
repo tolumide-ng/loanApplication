@@ -31,6 +31,9 @@ describe('useHome', () => {
       index: 0,
       status: Status.Rest,
       formId: null,
+      formErrors: {
+        [StepId.FinancialInformation]: null,
+      },
     });
   });
 
@@ -59,6 +62,9 @@ describe('useHome', () => {
       formId: null,
       activeStepId: StepId.PersonalInformation,
       index: 0,
+      formErrors: {
+        [StepId.FinancialInformation]: null,
+      },
     });
   });
 });
