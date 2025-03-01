@@ -39,10 +39,11 @@ export function useHome() {
       });
 
       setFormState((prev) => ({ ...prev, formId: uuid }));
-      setLoadedData(baseUserData);
+      setLoadedData({ ...defaultFormData, ...baseUserData });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setLoadedData(defaultFormData);
+      LocalStorage.remove(CONSTANTS.formKey);
     }
   }, []);
 
@@ -106,12 +107,18 @@ export function useHome() {
         const method = newData ? 'POST' : 'PATCH';
         const path = newData ? 'entities' : `entities/${formState.formId}`;
 
+        const formData = Object.fromEntries(
+          Object.entries(methods.getValues()).filter(([key]) =>
+            fieldsToValidate.includes(key as FormKey),
+          ),
+        );
+
         const {
           entity: { uuid },
         } = await apiCall<PostEntity>({
           path,
           method,
-          data: JSON.stringify(methods.getValues()),
+          data: JSON.stringify(formData),
         });
 
         setFormState((prev) => ({
