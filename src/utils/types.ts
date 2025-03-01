@@ -74,3 +74,8 @@ export type FormStepByCategory = Record<
   StepId,
   { keys: FormKey[]; index: number; next: StepId | null }
 >;
+
+export type PostEntity = {
+  message: string;
+  entity: { uuid: string } & UserData;
+};

@@ -4,7 +4,7 @@ import { useHome } from './useHome';
 import { StepOverview } from '@/components/organisms/StepOverview/StepOverview';
 
 export function Home() {
-  const { methods, formState, onRestart } = useHome();
+  const { methods, formState, onRestart, onClickBack, onSubmit } = useHome();
 
   return (
     <Stack>
@@ -16,6 +16,8 @@ export function Home() {
           formState={formState}
           methods={methods}
           onRestart={onRestart}
+          onClickBack={onClickBack}
+          onSubmit={onSubmit}
         />
       </FormProvider>
     </Stack>

@@ -5,8 +5,15 @@ import { defaultFormData } from '@/utils/defaultFormData';
 import { formStepsByCategory } from '@/utils/formUtils/steps';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LocalStorage } from '@/utils/localStorage';
-import { FormKey, FormState, Status, StepId, UserData } from '@/utils/types';
-import { useMemo, useState } from 'react';
+import {
+  FormKey,
+  FormState,
+  PostEntity,
+  Status,
+  StepId,
+  UserData,
+} from '@/utils/types';
+import { useCallback, useEffect, useState } from 'react';
 import {
   fieldsToValidate,
   validateSelectedFields,
@@ -22,51 +29,66 @@ export function useHome() {
 
   const [formState, setFormState] = useState<FormState>(defaultFormState);
 
-  function onClickBack(activeStepId: StepId) {
-    const result = Object.entries(formStepsByCategory).find(
-      ([, step]) => step.next === activeStepId,
-    );
+  const [loadedData, setLoadedData] = useState<UserData | null>(null);
 
-    if (!result) return;
+  const fetchData = useCallback(async (formId: string) => {
+    try {
+      const { uuid, ...baseUserData } = await apiCall<PostEntity['entity']>({
+        path: `entities/${formId}`,
+        method: 'GET',
+      });
 
-    const [id, { index }] = result;
-
-    setFormState((prev) => ({
-      ...prev,
-      index,
-      activeStepId: id as StepId,
-    }));
-  }
-
-  const defaultValues = useMemo(() => {
-    const storedFormState = LocalStorage.get(CONSTANTS.formKey);
-
-    if (storedFormState?.formId) {
-      (async () => {
-        try {
-          const baseUserData = await apiCall<string>({
-            path: `entries/${storedFormState.formId}`,
-            method: 'GET',
-          });
-
-          setFormState(storedFormState);
-          return JSON.parse(baseUserData) as UserData;
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (_error) {
-          return defaultFormData;
-        }
-      })();
-    } else {
-      return defaultFormData;
+      setFormState((prev) => ({ ...prev, formId: uuid }));
+      setLoadedData(baseUserData);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setLoadedData(defaultFormData);
     }
   }, []);
+
+  useEffect(() => {
+    const storedFormState = LocalStorage.get(CONSTANTS.formKey);
+    if (storedFormState?.formId) {
+      fetchData(storedFormState.formId);
+    } else {
+      setLoadedData(defaultFormData);
+    }
+  }, [fetchData]);
 
   const methods = useForm<UserData>({
     resolver: zodResolver(
       fieldsToValidate(formStepsByCategory[formState.activeStepId].keys),
     ),
-    defaultValues,
+    defaultValues: loadedData || defaultFormData,
   });
+
+  useEffect(() => {
+    if (loadedData) {
+      methods.reset(loadedData);
+    }
+  }, [loadedData, methods]);
+
+  useEffect(() => {
+    if (formState.formId) {
+      LocalStorage.set(CONSTANTS.formKey, formState);
+    }
+  }, [formState]);
+
+  function onClickBack(activeStepId: StepId) {
+    const result = Object.entries(formStepsByCategory).find(
+      ([, step]) => step.next === activeStepId,
+    );
+
+    if (result) {
+      const [id, { index }] = result;
+
+      setFormState((prev) => ({
+        ...prev,
+        index,
+        activeStepId: id as StepId,
+      }));
+    }
+  }
 
   async function onSubmit(fieldsToValidate: Array<FormKey>) {
     const formData = methods.getValues();
@@ -84,7 +106,9 @@ export function useHome() {
         const method = newData ? 'POST' : 'PATCH';
         const path = newData ? 'entities' : `entities/${formState.formId}`;
 
-        const apiResult = await apiCall<string>({
+        const {
+          entity: { uuid },
+        } = await apiCall<PostEntity>({
           path,
           method,
           data: JSON.stringify(methods.getValues()),
@@ -93,11 +117,8 @@ export function useHome() {
         setFormState((prev) => ({
           ...prev,
           status: Status.Success,
-          formId: newData ? apiResult : prev.formId,
-          // formId: '',
+          formId: newData ? uuid : prev.formId,
         }));
-
-        LocalStorage.set(CONSTANTS.formKey, formState);
 
         const nextStep = formStepsByCategory[formState.activeStepId].next;
         if (nextStep) {

@@ -22,7 +22,16 @@ export async function apiCall<T>({
   const url = `${API_URL}/${path}`;
 
   try {
-    const response = await axios({ url, method, params, data, signal });
+    const response = await axios({
+      url,
+      method,
+      params,
+      data,
+      signal,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     return response.data as unknown as T;
   } catch (error) {
     const err = error as Error;
